@@ -1,0 +1,107 @@
+% zones_class.mw
+% Zoneing class for HyperSphere decomposition
+
+$#include "matrix.h"
+$#include "hyper_sample/zones.hpp"
+$using namespace smo;
+
+@ @zones/zones.m -------------------------------------
+function [obj] = zones(dimCount, localRegionCount, bounds, globalRegionCount, enforceSymmetric, enforceExactCount, refineCollars);
+%function [obj] = zones(dimCount, localRegionCount, bounds, globalRegionCount, enforceSymmetric, enforceExactCount, refineCollars);
+%
+%create a new zones object
+%
+
+$[
+  Zones* zonesFactory(DimCount dimCount, RegionCount localRegionCount, const double *bounds) {
+    Region b(1,2);
+    b(0,0) = bounds[0];
+    b(0,1) = bounds[1];
+    return new Zones(dimCount, localRegionCount, Bounds(b));
+  }
+$]
+
+if nargin > 3
+  # Zones::setGlobalRegionCount(int globalRegionCount);
+end
+
+if nargin > 4
+  # Zones::setEnforceSymmetric(bool enforceSymmetric);
+end
+
+if nargin > 5
+  # Zones::setEnforceExactCount(bool enforceExactCount);
+end
+
+if nargin > 6
+  # Zones::setRefineCollars(bool refineCollars);
+end
+
+# Zones* p = zonesFactory(int dimCount, int localRegionCount, double [2] bounds);
+
+obj.p = p; 
+obj = class(obj, 'zones');
+
+@ @zones/destroy.m ---------------------------------------------
+function destroy(obj);
+%function destroy(obj);
+%delete the object associated with this zones
+
+p = obj.p; assert(~isempty(p));
+# delete(Zones* p);
+obj.p = [];
+
+@ @zones/zoneCount.m -------------------------------------------
+function [zoneCount] = zoneCount(obj)
+%function [zoneCount] = zoneCount(obj)
+
+p = obj.p; assert(~isempty(p));
+
+# int zoneCount = p->Zones.getZoneCount();
+
+@ @zones/regionCounts.m -------------------------------------
+function [regionCounts] = regionCounts(obj)
+%function [regionCounts] = regionCounts(obj)
+
+p = obj.p; assert(~isempty(p));
+
+$[
+    void getRegionCounts(Zones *p, mxArray ** regionCounts) {
+      RegionCounts* r;
+      p->getRegionCounts(r);
+      
+      *regionCounts = mxCreateNumericMatrix(1, r->size(), mxUINT32_CLASS, mxREAL);
+      int *mxRegion = static_cast<int *> (mxGetData(*regionCounts)); // give me a fucking safe pointer to the data Matlab 
+      for (unsigned int i=0; i < r->size(); ++i) {
+	mxRegion[i] = (*r)[i];
+      }
+      
+    }
+$]
+
+# getRegionCounts(Zones *p, output mxArray regionCounts);
+
+@ @zones/capAngles.m ----------------------------------------------
+function [capAngles] = capAngles(obj)
+  %function [capAngles = capAngles(obj)
+
+p = obj.p; assert(~isempty(p));
+	     
+$[
+    void getCapAngles(Zones *p, mxArray ** capAngles) {
+
+      typedef boost::numeric::ublas::vector<PolarAngle> PolarAngles; // what the fuck?  A bug in gcc?
+      PolarAngles *c;
+      p->getCapAngles(c);
+      
+      *capAngles = mxCreateDoubleMatrix(1, c->size(), mxREAL);
+      
+      double *mxCapAngles = mxGetPr(*capAngles);
+      
+      for (unsigned int i=0; i < c->size(); ++i) {
+	mxCapAngles[i] = (*c)[i];
+      }
+    }
+$]
+
+# getCapAngles(Zones *p, output mxArray capAngles);

@@ -1,0 +1,206 @@
+% geometry_class.mw
+% Geometry methods for HyperSphere decomposition
+
+$ #include "hyper_sample/utility/geometry.hpp"
+$ using namespace smo;
+
+@ @geometry/geometry.m -------------------------------------
+function [obj] = geometry();
+%function [obj] = geometry();
+%
+%create a new geometry object
+%
+
+obj = struct([]);
+obj = class(obj, 'geometry');
+
+@ @geometry/destroy.m ---------------------------------------------
+function destroy(obj);
+% delete the object associated with this geometry
+
+@ @geometry/polarCap.m ----------------------------------------------
+function polarAngle = polarCap(obj, dimCount, pointCount)
+%function polarAngle = polarCap(obj, dimCount, pointCount)
+
+# double polarAngle = Geometry::polarCap(int dimCount, int pointCount);
+
+@ @geometry/regionArea.m ---------------------------------------------
+function regionArea = regionArea(obj, dimCount, pointCount)
+%function regionArea = regionArea(obj, dimCount, pointCount)
+
+# double regionArea = Geometry::regionArea(int dimCount, int pointCount);
+
+
+@ @geometry/subRegionArea.m ---------------------------------------
+function subRegionArea = subRegionArea(obj, dimCount, polarCapArea, phi1, phi2, pointCount)
+%function subRegionArea = subRegionArea(obj, dimCount, polarCapArea, phi1, phi2, pointCount)
+
+# double subRegionArea = Geometry::regionArea(int dimCount, double polarCapArea, double phi1, double phi2, int pointCount);
+
+
+@ @geometry/angleOfCap.m ------------------------------------------
+function angleOfCap = angleOfCap(obj, dimCount, capArea)
+%function angleOfCap = angleOfCap(obj, dimCount, capArea)
+# double angleOfCap = Geometry::angleOfCap(int dimCount, double capArea);
+
+@ @geometry/areaOfCap.m -------------------------------------------
+function areaOfCap = areaOfCap(obj, dimCount, capPhi)
+%function areaOfCap = areaOfCap(obj, dimCount, capPhi)
+# double areaOfCap = Geometry::areaOfCap(int dimCount, double capPhi);
+
+@ @geometry/areaOfSphere.m ----------------------------------------
+function areaOfSphere = areaOfSphere(obj, dimCount)
+%function areaOfSphere = areaOfSphere(obj, dimCount)
+# double areaOfSphere = Geometry::areaOfSphere(int dimCount);
+
+@ @geometry/areaOfCollar.m ----------------------------------------
+function areaOfCollar = areaOfCollar(obj, dimCount, phi1, phi2)
+%function areaOfCollar = areaOfCollar(obj, dimCount, phi1, phi2)
+# double areaOfCollar = Geometry::areaOfCollar(int dimCount, double phi1, double phi2);
+
+@ @geometry/bottomCapRegion.m ----------------------------------------
+function region = bottomCapRegion(obj, dimCount, capPhi)
+%function region = bottomCapRegion(obj, dimCount, capPhi)
+
+$[
+  void getBottomCapRegion(int d, double capPhi, double *& region) {
+    Region r(d,2);
+    Geometry::bottomCapRegion(d, capPhi, r);
+    for (int i=0; i < d; i++) {
+      for (int j=0; j < 2; j++) {
+	region[2*i + j] = r(i,j);
+      }
+    }
+    return;
+  }
+$]
+
+# getBottomCapRegion(int dimCount, double capPhi, output double [2,dimCount] region);
+region = region';
+
+@ @geometry/topCapRegion.m ----------------------------------------
+function region = topCapRegion(obj, dimCount, capPhi)
+%function region = topCapRegion(obj, dimCount, capPhi)
+
+$[
+  void getTopCapRegion(int d, double capPhi, double *& region) {
+    Region r(d,2);
+    Geometry::topCapRegion(d, capPhi, r);
+    for (int i=0; i < d; i++) {
+      for (int j=0; j < 2; j++) {
+	region[2*i + j] = r(i,j);
+      }
+    }
+    return;
+  }
+$]
+
+# getTopCapRegion(int dimCount, double capPhi, output double [2,dimCount] region);
+region = region';
+
+@ @geometry/sphereRegion.m ----------------------------------------
+function region = sphereRegion(obj, dimCount)
+%function region = sphereRegion(obj, dimCount)
+
+$[
+  void getSphereRegion(int d, double *&   region) {
+    Region r(d,2);
+    Geometry::sphereRegion(d, r);
+    
+    for (int i=0; i < d; i++) {
+      for (int j=0; j < 2; j++) {
+	region[2*i + j] = r(i,j);
+      }
+    }
+
+    return;
+  }
+$]
+
+# getSphereRegion(int dimCount, output double [2,dimCount] region);
+
+region = region';
+   
+@ @geometry/circleOffset.m ----------------------------------------
+function offset = circleOffset(obj, p1, p2)
+%function offset = circleOffset(obj, p1, p2) '
+
+# double offset = Geometry::circleOffset(int p1, int p2);
+
+@ @geometry/toPolar.m ----------------------------------------
+function region = toPolar(obj, cartPoints)
+%function region = toPolar(obj, cartPoints)
+
+$[
+  void toPolar(int d, int pointCount, double *points, double *& region) {
+    Region r(pointCount,d-1);
+    CartPoints p(pointCount,d);
+    
+    for (int j=0; j < pointCount; j++) {
+      for (int i=0; i < d; i++) {
+	p(j,i) = points[i + d*j];
+      }
+    }
+
+    Geometry::toPolar(p, r);
+    
+    for (int j=0; j < pointCount; j++) {
+      for (int i=0; i < d-1; i++) {
+	region[i + (d-1)*j] = r(j,i);
+      }
+    }
+    return;
+  }
+  $]
+
+[dimCount, pointCount] = size(cartPoints);
+
+pointDimCount = dimCount;
+regionDimCount = dimCount-1;
+cartPointCount = pointDimCount*pointCount;
+regionCount = regionDimCount*pointCount;
+
+cartPoints = cartPoints(:);
+
+# toPolar(int pointDimCount, int pointCount, double [cartPointCount,1] cartPoints, output double [regionCount,1] region);
+
+region = reshape(region,regionDimCount, pointCount);
+
+@ @geometry/toCart.m ----------------------------------------
+function cartPoints = toCart(obj, region)
+%function cartPoints = toCart(obj, region)
+
+$[
+  void toCart(int d, int pointCount, double *region, double *& cartPoints) {
+      CartPoints p(pointCount,d+1);
+      Region r(pointCount,d);
+
+      for (int j=0; j < pointCount; j++) {
+	for (int i=0; i < d; i++) {
+	  r(j,i) = region[i + d*j];
+	}
+      }
+      
+      Geometry::toCart(r, p);
+      
+	for (int j=0; j < pointCount; j++) {      
+	  for (int i=0; i < d+1; i++) {
+	    cartPoints[i + (d+1)*j] = p(j,i);
+	}
+      }
+      return;
+  }
+$]
+
+[dimCount, pointCount] = size(region);
+
+pointDimCount = dimCount+1;
+regionDimCount = dimCount;
+cartPointCount = pointDimCount*pointCount;
+regionCount = regionDimCount*pointCount;
+
+region = region(:);
+
+# toCart(int regionDimCount, int pointCount, double [regionCount, 1] region, output double [cartPointCount,1] cartPoints);
+
+cartPoints = reshape(cartPoints, pointDimCount, pointCount);

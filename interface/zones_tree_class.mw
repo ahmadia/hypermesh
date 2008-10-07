@@ -1,0 +1,182 @@
+% zones_tree_class.mw
+% Zone Tree class for HyperSphere decomposition
+
+$#include <cstdlib>
+$#include "matrix.h"
+$#include "hyper_sample/utility/geometry.hpp"
+$#include "hyper_sample/zones_tree.hpp"
+$using namespace smo;
+
+@ @zones_tree/zones_tree.m -------------------------------------
+function [obj] = zones_tree(dimCount, regionCount);
+%function [obj] = zones_tree(dimCount, regionCount);
+%
+%create a new zones_tree object
+%
+
+# ZonesTree *p = new ZonesTree(int dimCount, int regionCount);
+
+obj.p = p; 
+obj = class(obj, 'zones_tree');
+
+@ @zones_tree/destroy.m ---------------------------------------------
+function destroy(obj);
+%function destroy(obj);
+%delete the object associated with this zones_tree
+
+p = obj.p; assert(~isempty(p));
+# delete(ZonesTree* p);
+obj.p = [];
+
+@ @zones_tree/display.m ---------------------------------------------
+function display(obj);
+%function display(obj);
+%
+%display the structure of the ZonesTree
+
+p = obj.p; assert(~isempty(p));
+
+# p->ZonesTree.display();
+
+@ @zones_tree/size.m -------------------------------------------------
+function [nodeCount] = size(obj);
+%function size(obj);
+%
+%get the number of nodes in the ZonesTree
+
+p = obj.p; assert(~isempty(p));
+
+# int nodeCount = p->ZonesTree.size();
+
+@ @zones_tree/point.m ----------------------------------------------------
+function [x] = point(obj, index);
+%function [x] = point(obj, index);
+%
+%get the point associated with index;
+
+p = obj.p; assert(~isempty(p));
+
+# int dimCount = p->ZonesTree.getDimCount();
+
+$[
+  void getPoint(ZonesTree* zt, int pointIndex, int dimCount, double *& x) {
+    CartPoint point(dimCount);
+    
+    zt->getPoint(pointIndex, point);
+    
+    for (int i=0; i < dimCount; i++) {
+      x[i] = point[i];
+    }
+  }
+$]
+
+# getPoint(ZonesTree* p, int index, int dimCount, output double [dimCount,1] x); 
+
+@ @zones_tree/fakeTreeAccess.m ----------------------------------------------------
+function fakeTreeAccess(obj)
+%function fakeTreeAccess(obj)
+%
+% access points through the entire tree to simulate timing
+
+p = obj.p; assert(~isempty(p));
+
+$[
+  void fakeTreeAccess(ZonesTree* zt) {
+    DimCount dimCount = zt->getDimCount();
+    RegionCount regionCount = zt->getRegionCount();
+    CartPoint point(dimCount);
+    for (int i=0; i < regionCount; i++) {
+      zt->getPoint(i,point);
+    }
+  }
+$]
+
+# fakeTreeAccess(ZonesTree *p);
+
+@ @zones_tree/fakeRandomTreeAccess.m ----------------------------------------------------
+function fakeRandomTreeAccess(obj)
+%function fakeRandomTreeAccess(obj)
+%
+% access points through the entire tree to simulate timing
+
+p = obj.p; assert(~isempty(p));
+
+$[
+  void fakeRandomTreeAccess(ZonesTree* zt) {
+    int j;
+    DimCount dimCount = zt->getDimCount();
+    RegionCount regionCount = zt->getRegionCount();
+    CartPoint point(dimCount);
+    for (int i=0; i < regionCount; i++) {
+      j = rand()%(regionCount);
+      zt->getPoint(j,point);
+    }
+  }
+$]
+
+# fakeRandomTreeAccess(ZonesTree *p);
+
+@ @zones_tree/fakeMemoryInit.m ------------------------------------------------------
+function fakeMemoryInit(obj)
+%function fakeMemoryInit(obj)
+%
+% memory initialization to simulate timing
+
+$[  
+  std::vector<double> FakeMemory;
+  void fakeMemoryInit(ZonesTree* zt) {
+    DimCount dimCount = zt->getDimCount();
+    RegionCount regionCount = zt->getRegionCount();
+    FakeMemory.resize(dimCount*regionCount);
+  }
+  
+$]
+
+p = obj.p; assert(~isempty(p));
+
+# fakeMemoryInit(ZonesTree *p);
+
+@ @zones_tree/fakeMemoryAccess.m ----------------------------------------------------
+function fakeMemoryAccess(obj)
+%function fakeMemoryAccess(obj)
+%
+% access points through a block of nxd memory to simulate timing
+
+$[
+  void fakeMemoryAccess(ZonesTree* zt) {
+    PolarAngle x = 0.5;
+    DimCount dimCount = zt->getDimCount();
+    RegionCount regionCount = zt->getRegionCount();
+    for (int i=0; i < dimCount*regionCount; i++) {
+      FakeMemory[i] = x;
+    }
+  }
+$]
+
+p = obj.p; assert(~isempty(p));
+# fakeMemoryAccess(ZonesTree *p);
+
+
+@ @zones_tree/fakeRandomMemoryAccess.m ----------------------------------------------------
+function fakeRandomMemoryAccess(obj)
+%function fakeRandomMemoryAccess(obj)
+%
+% access points through a block of nxd memory to simulate timing
+
+$[
+  void fakeRandomMemoryAccess(ZonesTree* zt) {
+    int j;
+    PolarAngle x = 0.5;
+    DimCount dimCount = zt->getDimCount();
+    RegionCount regionCount = zt->getRegionCount();
+    for (int i=0; i < regionCount; i++) {
+      j = rand()%(regionCount);
+      for (int k =0; k < dimCount; k++) {
+	FakeMemory[j*dimCount + k] = x;
+      }
+    }
+  }
+$]
+
+p = obj.p; assert(~isempty(p));
+# fakeRandomMemoryAccess(ZonesTree *p);

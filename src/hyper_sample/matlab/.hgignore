@@ -1,0 +1,10 @@
+syntax: glob
+*.mat
+*.o
+*~
+.*
+*.pickle
+*_mex*
+
+syntax: regexp
+.*\#.*\#$
