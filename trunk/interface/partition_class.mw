@@ -1,0 +1,28 @@
+% partition_class.mw
+% Partitioning class for HyperSphere decomposition
+
+$#include "matrix.h"
+$#include "hyper_sample/partition.hpp"
+$using namespace smo;
+
+@ @partition/partition.m -------------------------------------
+function [obj] = partition();
+%function [obj] = partition();
+%
+%create a new partition object
+%
+
+# Partition* p = new Partition();
+
+obj.p = p; 
+obj = class(obj, 'partition');
+
+@ @partition/destroy.m ---------------------------------------------
+function destroy(obj);
+%function destroy(obj);
+%delete the object associated with this partition
+
+p = obj.p; assert(~isempty(p));
+# delete(Partition* p);
+obj.p = [];
+

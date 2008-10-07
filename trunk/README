@@ -1,0 +1,7 @@
+Please don't hesitate to contact the author at aja2111@columbia.edu for help installing or using this software. 
+
+You will need MWRap to install the MATLAB interfaces: http://www.cims.nyu.edu/~dbindel/mwrap/
+You will need O2scl to handle the geometry/solver calculations: http://sourceforge.net/projects/o2scl/
+You will need BOOST for the numerical linear algebra
+
+Edit the make.inc file to your needs before typing make all at the command line
